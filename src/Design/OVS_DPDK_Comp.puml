@@ -1,0 +1,47 @@
+@startuml
+
+title OVS_DPDP Setup on Raw2
+
+cloud {
+    package VM1 {
+        [IP_Router]
+        interface "192.168.201.1/24" as VM1_ens3
+        interface "192.168.202.1/24" as VM1_ens4
+    }
+
+    package VM2 {
+        [Test_Tools]
+        interface "192.168.201.2/24" as VM2_ens3
+        interface "192.168.202.2/24" as VM2_ens4
+    }    
+}
+
+package "OVS" {
+    [br-nodpdk]
+    [br-dpdk]
+}
+
+interface "LAN:192.168.1.3/24" as LAN_if
+interface "Local:192.168.201.16/24" as local_brnodpdk
+interface DPDK0_enp0s0f0
+interface DPDK1_enp0s0f1
+
+[IP_Router].down.>VM1_ens3
+[IP_Router].down.>VM1_ens4
+[Test_Tools].down.>VM2_ens3
+[Test_Tools].down.>VM2_ens4
+
+VM1_ens3 -down->[br-nodpdk]
+VM1_ens4 -down->[br-dpdk]
+
+VM2_ens3 -down->[br-nodpdk]
+VM2_ens4 -down->[br-dpdk]
+
+local_brnodpdk <-up-> [br-nodpdk]
+DPDK0_enp0s0f0 <-up-> [br-dpdk]
+DPDK1_enp0s0f1 <-up-> [br-dpdk]
+
+[IP_Router0] -->LAN_if
+[IP_Router0] -->local_brnodpdk
+
+@enduml

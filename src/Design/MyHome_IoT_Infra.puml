@@ -1,0 +1,80 @@
+@startuml
+
+title MyHome IoT Infrastructure
+
+skinparam interface {
+  backgroundColor RosyBrown
+  borderColor orange
+}
+
+skinparam component {
+  FontSize 13
+  BackgroundColor<<Apache>> Red
+  BorderColor<<Apache>> #FF6655
+  FontName Courier
+  BorderColor black
+  BackgroundColor gold
+  ArrowFontName Impact
+  ArrowColor #FF6655
+  ArrowFontColor #777777
+}
+
+
+cloud {
+    database VM1 {
+        [M2M Broker]
+        interface "192.168.201.1/24" as VM1_ens3
+     }
+
+        [ovs_bridge]
+}
+
+    package VM2 {
+        [MyHomeCenter]
+        interface "192.168.201.2/24" as VM2_ens3
+    }  
+
+    package VM3 {
+        [MyHome]
+        interface "192.168.201.3/24" as VM3_ens3
+    }  
+  
+    package VMn {
+        [MyHome_n]
+        interface "192.168.201.n/24" as VMn_ens3
+    }  
+
+
+[M2M Broker]<.down.>VM1_ens3
+
+[MyHomeCenter]<.up.>VM2_ens3
+
+[MyHome]<.up.>VM3_ens3
+[MyHome_n]<.up.>VMn_ens3
+
+VM1_ens3 -down->[ovs_bridge]
+
+VM2_ens3 <-right->[ovs_bridge]:subscribe
+
+VM3_ens3 -up->[ovs_bridge]:publish
+
+note right of [MyHomeCenter]
+    Subcrib to M2M broker for the topic interested,
+    such as home/temperature, home/ligthness.
+end note
+
+note right of [M2M Broker]
+    Listen and respone to the publishers and
+    subscribers.
+end note
+
+
+note right of [MyHome]
+    Each home publish the data to M2M broker,
+    such as home/temperature, home/ligthness.
+end note
+
+VMn_ens3 -up->[ovs_bridge]:publish
+
+
+@enduml
